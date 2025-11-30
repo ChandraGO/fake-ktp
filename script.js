@@ -130,54 +130,50 @@ async function generateKTP() {
   ctx.drawImage(templateImg, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
   // ================================
-  // 2. FOTO – CROP TENGAH (PAS FOTO)
+  // 2. FOTO – CROP TENGAH + SHRINK
   // ================================
-  // ================================
-// 2. FOTO – CROP TENGAH + SHRINK
-// ================================
-const PHOTO_X = 520;
-const PHOTO_Y = 80;   // dinaikkan sedikit lagi
-const PHOTO_W = 200;
-const PHOTO_H = 280;   // frame lebih pendek
+  const PHOTO_X = 520;
+  const PHOTO_Y = 80;   // dinaikkan sedikit
+  const PHOTO_W = 200;
+  const PHOTO_H = 280;  // frame lebih pendek
 
-const frameAspect = PHOTO_W / PHOTO_H;
-const imgAspect = pasPhotoImg.width / pasPhotoImg.height;
+  const frameAspect = PHOTO_W / PHOTO_H;
+  const imgAspect = pasPhotoImg.width / pasPhotoImg.height;
 
-let srcX, srcY, srcW, srcH;
+  let srcX, srcY, srcW, srcH;
 
-// crop tengah (kiri-kanan / atas-bawah)
-if (imgAspect > frameAspect) {
-  // foto lebih lebar → potong kiri-kanan
-  srcH = pasPhotoImg.height;
-  srcW = srcH * frameAspect;
-  srcX = (pasPhotoImg.width - srcW) / 2;
-  srcY = 0;
-} else {
-  // foto lebih tinggi → potong atas-bawah
-  srcW = pasPhotoImg.width;
-  srcH = srcW / frameAspect;
-  srcX = 0;
-  srcY = (pasPhotoImg.height - srcH) / 2;
-}
+  // crop tengah (kiri-kanan / atas-bawah)
+  if (imgAspect > frameAspect) {
+    // foto lebih lebar → potong kiri-kanan
+    srcH = pasPhotoImg.height;
+    srcW = srcH * frameAspect;
+    srcX = (pasPhotoImg.width - srcW) / 2;
+    srcY = 0;
+  } else {
+    // foto lebih tinggi → potong atas-bawah
+    srcW = pasPhotoImg.width;
+    srcH = srcW / frameAspect;
+    srcX = 0;
+    srcY = (pasPhotoImg.height - srcH) / 2;
+  }
 
-// scale supaya muat, lalu perkecil lagi (shrink)
-const baseScale = Math.min(PHOTO_W / srcW, PHOTO_H / srcH);
-const SHRINK = 0.78;  // ubah jadi 0.75 kalau mau LEBIH kecil lagi
-const scale = baseScale * SHRINK;
+  // scale supaya muat, lalu perkecil lagi (shrink)
+  const baseScale = Math.min(PHOTO_W / srcW, PHOTO_H / srcH);
+  const SHRINK = 0.78; // tweak di sini kalau mau lebih kecil/besar
+  const scale = baseScale * SHRINK;
 
-const drawW = srcW * scale;
-const drawH = srcH * scale;
+  const drawW = srcW * scale;
+  const drawH = srcH * scale;
 
-// center di dalam area foto
-const drawX = PHOTO_X + (PHOTO_W - drawW) / 2;
-const drawY = PHOTO_Y + (PHOTO_H - drawH) / 2;
+  // center di dalam area foto
+  const drawX = PHOTO_X + (PHOTO_W - drawW) / 2;
+  const drawY = PHOTO_Y + (PHOTO_H - drawH) / 2;
 
-ctx.drawImage(
-  pasPhotoImg,
-  srcX, srcY, srcW, srcH,
-  drawX, drawY, drawW, drawH
-);
-
+  ctx.drawImage(
+    pasPhotoImg,
+    srcX, srcY, srcW, srcH,
+    drawX, drawY, drawW, drawH
+  );
 
   // ================================
   // 3. Teks Judul Provinsi & Kota
@@ -226,16 +222,22 @@ ctx.drawImage(
   drawTextLeft(190, 390, upper(data.masa_berlaku), "ArrialKTP", 16);
 
   // ================================
-  // 6. Kota & Tanggal – Dinaikkan
+  // 6. Kota & Tanggal – LEBIH KECIL & LEBIH TURUN
   // ================================
   drawTextLeft(
     553,
-    330,   // sebelumnya 340
+    345,   // turun sedikit dari 330
     `KOTA ${data.kota.toUpperCase()}`,
     "ArrialKTP",
-    16
+    12      // lebih kecil dari 16
   );
-  drawTextLeft(570, 350, data.terbuat, "ArrialKTP", 16); // sebelumnya 360
+  drawTextLeft(
+    570,
+    365,    // turun sedikit dari 350
+    data.terbuat,
+    "ArrialKTP",
+    12
+  );
 
   // ================================
   // 7. Tanda Tangan
@@ -284,12 +286,3 @@ downloadBtn.addEventListener("click", () => {
     URL.revokeObjectURL(url);
   }, "image/png");
 });
-
-
-
-
-
-
-
-
-
