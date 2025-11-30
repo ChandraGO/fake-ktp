@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <title>Fake E-KTP Generator</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 900px;
+      margin: 20px auto;
+      padding: 0 10px;
+    }
+
+    form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 10px 20px;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: flex;
+      flex-direction: column;
+      font-size: 14px;
+      gap: 4px;
+    }
+
+    input, select {
+      padding: 6px 8px;
+      font-size: 14px;
+    }
+
+    .full-width {
+      grid-column: 1 / -1;
+    }
+
+    button {
+      padding: 8px 14px;
+      font-size: 14px;
+      cursor: pointer;
+      margin-right: 8px;
+    }
+
+    #preview-container {
+      margin-top: 20px;
+    }
+
+    #ktp-canvas {
+      border: 1px solid #ccc;
+      max-width: 100%;
+    }
+
+    #download-link {
+      display: inline-block;
+      margin-top: 10px;
+    }
+  </style>
+
+  <!-- Load font untuk dipakai di canvas -->
+  <style>
+    @font-face {
+      font-family: "ArrialKTP";
+      src: url("./font/Arrial.ttf") format("truetype");
+    }
+    @font-face {
+      font-family: "OcrKTP";
+      src: url("./font/Ocr.ttf") format("truetype");
+    }
+    @font-face {
+      font-family: "SignKTP";
+      src: url("./font/Sign.ttf") format("truetype");
+    }
+  </style>
+</head>
+<body>
+  <h1>Fake E-KTP Generator (HTML + JS)</h1>
+
+  <form id="ktp-form">
+    <label>
+      Provinsi
+      <input type="text" id="provinsi" name="provinsi" required value="jakarta selatan" />
+    </label>
+    <label>
+      Kota / Kab
+      <input type="text" id="kota" name="kota" required value="jakarta" />
+    </label>
+    <label>
+      NIK
+      <input type="text" id="nik" name="nik" required value="127xxxx" />
+    </label>
+    <label>
+      Nama
+      <input type="text" id="nama" name="nama" required value="kiana dimitri" />
+    </label>
+    <label>
+      Tempat / Tgl Lahir
+      <input type="text" id="ttl" name="ttl" required value="jakarta, 01-09-2000" />
+    </label>
+    <label>
+      Jenis Kelamin
+      <input type="text" id="jenis_kelamin" name="jenis_kelamin" required value="laki-laki" />
+    </label>
+    <label>
+      Golongan Darah
+      <input type="text" id="golongan_darah" name="golongan_darah" required value="o" />
+    </label>
+    <label class="full-width">
+      Alamat
+      <input type="text" id="alamat" name="alamat" required value="jl xxx xxx xxx" />
+    </label>
+    <label>
+      RT / RW
+      <input type="text" id="rtRw" name="rtRw" required value="000/000" />
+    </label>
+    <label>
+      Kel / Desa
+      <input type="text" id="kel_desa" name="kel_desa" required value="xxx" />
+    </label>
+    <label>
+      Kecamatan
+      <input type="text" id="kecamatan" name="kecamatan" required value="xxx" />
+    </label>
+    <label>
+      Agama
+      <input type="text" id="agama" name="agama" required value="xxx" />
+    </label>
+    <label>
+      Status Perkawinan
+      <input type="text" id="status" name="status" required value="belum menikah" />
+    </label>
+    <label>
+      Pekerjaan
+      <input type="text" id="pekerjaan" name="pekerjaan" required value="wiraswasta" />
+    </label>
+    <label>
+      Kewarganegaraan
+      <input type="text" id="kewarganegaraan" name="kewarganegaraan" required value="wni" />
+    </label>
+    <label>
+      Masa Berlaku
+      <input type="text" id="masa_berlaku" name="masa_berlaku" required value="seumur hidup" />
+    </label>
+    <label>
+      Tanggal Terbuat
+      <input type="text" id="terbuat" name="terbuat" required value="19-10-2023" />
+    </label>
+
+    <label class="full-width">
+      Pas Photo (JPG/PNG)
+      <input type="file" id="pas_photo" name="pas_photo" accept="image/*" required />
+    </label>
+
+    <div class="full-width">
+      <button type="submit">Generate E-KTP</button>
+      <button type="button" id="clear-btn">Bersihkan</button>
+    </div>
+  </form>
+
+  <div id="preview-container">
+    <canvas id="ktp-canvas" width="720" height="463"></canvas>
+    <br />
+    <a id="download-link" href="#" download="fake-ektp.png" style="display:none;">Download hasil sebagai PNG</a>
+  </div>
+
+  <script type="module" src="./script.js"></script>
+</body>
+</html>
