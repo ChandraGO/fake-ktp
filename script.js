@@ -136,7 +136,7 @@ async function generateKTP() {
 // 2. FOTO – CROP TENGAH + SHRINK
 // ================================
 const PHOTO_X = 520;
-const PHOTO_Y = 110;   // dinaikkan sedikit lagi
+const PHOTO_Y = 80;   // dinaikkan sedikit lagi
 const PHOTO_W = 200;
 const PHOTO_H = 280;   // frame lebih pendek
 
@@ -284,6 +284,7 @@ downloadBtn.addEventListener("click", () => {
     URL.revokeObjectURL(url);
   }, "image/png");
 });
+
 
 
 
