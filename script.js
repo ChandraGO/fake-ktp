@@ -60,7 +60,7 @@ async function loadFonts() {
   await Promise.all([
     arrial.load().then((f) => document.fonts.add(f)),
     ocr.load().then((f) => document.fonts.add(f)),
-    sign.load().then((f) => document.fonts.add(f))
+    sign.load().then((f) => document.fonts.add(f)),
   ]);
 }
 
@@ -87,7 +87,7 @@ function getFormData() {
     pekerjaan: get("pekerjaan"),
     kewarganegaraan: get("kewarganegaraan"),
     masa_berlaku: get("masa_berlaku"),
-    terbuat: get("terbuat")
+    terbuat: get("terbuat"),
   };
 }
 
@@ -111,6 +111,34 @@ function drawTextCenter(x, y, text, font, size) {
 }
 
 // ===============================
+// Upload canvas ke server (Vercel Blob)
+// ===============================
+async function uploadCanvasToServer() {
+  const blob = await new Promise((resolve, reject) => {
+    canvas.toBlob((b) => {
+      if (!b) return reject(new Error("Canvas kosong"));
+      resolve(b);
+    }, "image/png");
+  });
+
+  const res = await fetch("/api/upload", {
+    method: "POST",
+    body: blob, // kirim binary PNG langsung
+  });
+
+  if (!res.ok) {
+    throw new Error("Upload gagal, status: " + res.status);
+  }
+
+  const data = await res.json();
+  if (!data.url) {
+    throw new Error("Response tidak punya field 'url'");
+  }
+
+  return data.url; // URL HTTPS publik dari Vercel Blob
+}
+
+// ===============================
 // MAIN: Generate E-KTP
 // ===============================
 async function generateKTP() {
@@ -126,7 +154,7 @@ async function generateKTP() {
 
   const [templateImg, pasPhotoImg] = await Promise.all([
     loadImageFromURL(templateSrc),
-    loadImageFromFile(file)
+    loadImageFromFile(file),
   ]);
 
   canvas.width = CANVAS_WIDTH;
@@ -139,16 +167,15 @@ async function generateKTP() {
   // 2. FOTO – CROP TENGAH + SHRINK
   // ================================
   const PHOTO_X = 520;
-  const PHOTO_Y = 80;   // dinaikkan sedikit
+  const PHOTO_Y = 80; // dinaikkan sedikit
   const PHOTO_W = 200;
-  const PHOTO_H = 280;  // frame lebih pendek
+  const PHOTO_H = 280; // frame lebih pendek
 
   const frameAspect = PHOTO_W / PHOTO_H;
   const imgAspect = pasPhotoImg.width / pasPhotoImg.height;
 
   let srcX, srcY, srcW, srcH;
 
-  // crop tengah (kiri-kanan / atas-bawah)
   if (imgAspect > frameAspect) {
     // foto lebih lebar → potong kiri-kanan
     srcH = pasPhotoImg.height;
@@ -163,43 +190,24 @@ async function generateKTP() {
     srcY = (pasPhotoImg.height - srcH) / 2;
   }
 
-  // scale supaya muat, lalu perkecil lagi (shrink)
   const baseScale = Math.min(PHOTO_W / srcW, PHOTO_H / srcH);
-  const SHRINK = 0.78; // tweak di sini kalau mau lebih kecil/besar
+  const SHRINK = 0.78;
   const scale = baseScale * SHRINK;
 
   const drawW = srcW * scale;
   const drawH = srcH * scale;
 
-  // posisi gambar hasil crop
-  const offsetLeft = -15; // nilai negatif = geser ke kiri
-
+  const offsetLeft = -15; // geser foto sedikit ke kiri
   const drawX = PHOTO_X + (PHOTO_W - drawW) / 2 + offsetLeft;
   const drawY = PHOTO_Y + (PHOTO_H - drawH) / 2;
 
-  ctx.drawImage(
-    pasPhotoImg,
-    srcX, srcY, srcW, srcH,
-    drawX, drawY, drawW, drawH
-  );
+  ctx.drawImage(pasPhotoImg, srcX, srcY, srcW, srcH, drawX, drawY, drawW, drawH);
 
   // ================================
   // 3. Teks Judul Provinsi & Kota
   // ================================
-  drawTextCenter(
-    380,
-    45,
-    `PROVINSI ${data.provinsi.toUpperCase()}`,
-    "ArrialKTP",
-    25
-  );
-  drawTextCenter(
-    380,
-    70,
-    `KOTA ${data.kota.toUpperCase()}`,
-    "ArrialKTP",
-    25
-  );
+  drawTextCenter(380, 45, `PROVINSI ${data.provinsi.toUpperCase()}`, "ArrialKTP", 25);
+  drawTextCenter(380, 70, `KOTA ${data.kota.toUpperCase()}`, "ArrialKTP", 25);
 
   // ================================
   // 4. NIK
@@ -230,22 +238,10 @@ async function generateKTP() {
   drawTextLeft(190, 390, upper(data.masa_berlaku), "ArrialKTP", 16);
 
   // ================================
-  // 6. Kota & Tanggal – lebih kecil & turun
+  // 6. Kota & Tanggal – kecil & turun
   // ================================
-  drawTextLeft(
-    553,
-    345,
-    `KOTA ${data.kota.toUpperCase()}`,
-    "ArrialKTP",
-    12
-  );
-  drawTextLeft(
-    570,
-    365,
-    data.terbuat,
-    "ArrialKTP",
-    12
-  );
+  drawTextLeft(553, 345, `KOTA ${data.kota.toUpperCase()}`, "ArrialKTP", 12);
+  drawTextLeft(570, 365, data.terbuat, "ArrialKTP", 12);
 
   // ================================
   // 7. Tanda Tangan
@@ -256,16 +252,37 @@ async function generateKTP() {
   ctx.textBaseline = "top";
   ctx.fillText(sign, 540, 395);
 
-  console.log("[OK] Generated");
+  console.log("[OK] Generated di canvas");
 
-  // Tampilkan tombol download & update result link (data URL)
+  // Tampilkan tombol download lokal
   if (downloadLink) {
     downloadLink.classList.add("show");
   }
 
+  // 1️⃣ Coba upload ke server (Vercel Blob)
+  let publicUrl = null;
+  try {
+    publicUrl = await uploadCanvasToServer();
+    console.log("URL publik:", publicUrl);
+  } catch (err) {
+    console.warn("Upload gagal, pakai data URL lokal:", err);
+  }
+
+  // 2️⃣ Set Result Link
   if (resultLink) {
-    const dataUrl = canvas.toDataURL("image/png");
-    resultLink.href = dataUrl;
+    let href;
+    let label;
+
+    if (publicUrl) {
+      href = publicUrl;
+      label = "🔗 Result link (URL publik, bisa di-fetch web lain)";
+    } else {
+      href = canvas.toDataURL("image/png");
+      label = "🔗 Result link (data URL lokal)";
+    }
+
+    resultLink.href = href;
+    resultLink.textContent = label;
     resultLink.style.display = "inline-block";
   }
 }
@@ -276,7 +293,6 @@ async function generateKTP() {
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  // Tampilkan loading popup
   if (loadingOverlay) {
     loadingOverlay.classList.add("show");
   }
@@ -287,7 +303,6 @@ form.addEventListener("submit", async (e) => {
     console.error(err);
     alert("Terjadi kesalahan saat generate E-KTP.");
   } finally {
-    // Sembunyikan loading popup
     if (loadingOverlay) {
       loadingOverlay.classList.remove("show");
     }
@@ -311,7 +326,7 @@ clearBtn.addEventListener("click", () => {
 });
 
 // ===============================
-// EVENT: Download PNG
+// EVENT: Download PNG (lokal)
 // ===============================
 downloadLink.addEventListener("click", (e) => {
   e.preventDefault();
