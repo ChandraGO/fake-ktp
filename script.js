@@ -12,7 +12,9 @@ const ctx = canvas.getContext("2d");
 const pasPhotoInput = document.getElementById("pas_photo");
 
 const clearBtn = document.getElementById("clear-btn");
-const downloadBtn = document.getElementById("download-btn");
+const downloadLink = document.getElementById("download-link");
+const loadingOverlay = document.getElementById("loading-overlay");
+const resultLink = document.getElementById("result-link");
 
 // ===============================
 // HELPER: Load image dari URL
@@ -27,35 +29,39 @@ function loadImageFromURL(url) {
 }
 
 // ===============================
-// HELPER: Load image dari file input
+// HELPER: Load image dari File
 // ===============================
 function loadImageFromFile(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onerror = reject;
-    reader.onload = () => {
-      const img = new Image();
-      img.onload = () => resolve(img);
-      img.onerror = reject;
-      img.src = reader.result;
+    reader.onload = async () => {
+      try {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = reader.result;
+      } catch (err) {
+        reject(err);
+      }
     };
+    reader.onerror = reject;
     reader.readAsDataURL(file);
   });
 }
 
 // ===============================
-// Load Fonts untuk canvas
+// Load font agar bisa dipakai di canvas
 // ===============================
 async function loadFonts() {
-  const fArrial = new FontFace("ArrialKTP", "url(./font/Arrial.ttf)");
-  const fOcr = new FontFace("OcrKTP", "url(./font/Ocr.ttf)");
-  const fSign = new FontFace("SignKTP", "url(./font/Sign.ttf)");
+  const arrial = new FontFace("ArrialKTP", "url(./font/Arrial.ttf)");
+  const ocr = new FontFace("OcrKTP", "url(./font/Ocr.ttf)");
+  const sign = new FontFace("SignKTP", "url(./font/Sign.ttf)");
 
-  await Promise.all([fArrial.load(), fOcr.load(), fSign.load()]);
-
-  document.fonts.add(fArrial);
-  document.fonts.add(fOcr);
-  document.fonts.add(fSign);
+  await Promise.all([
+    arrial.load().then((f) => document.fonts.add(f)),
+    ocr.load().then((f) => document.fonts.add(f)),
+    sign.load().then((f) => document.fonts.add(f))
+  ]);
 }
 
 // ===============================
@@ -165,12 +171,11 @@ async function generateKTP() {
   const drawW = srcW * scale;
   const drawH = srcH * scale;
 
-// posisi gambar hasil crop
-const offsetLeft = -15; // nilai negatif = geser ke kiri
+  // posisi gambar hasil crop
+  const offsetLeft = -15; // nilai negatif = geser ke kiri
 
-const drawX = PHOTO_X + (PHOTO_W - drawW) / 2 + offsetLeft;
-const drawY = PHOTO_Y + (PHOTO_H - drawH) / 2;
-
+  const drawX = PHOTO_X + (PHOTO_W - drawW) / 2 + offsetLeft;
+  const drawY = PHOTO_Y + (PHOTO_H - drawH) / 2;
 
   ctx.drawImage(
     pasPhotoImg,
@@ -225,18 +230,18 @@ const drawY = PHOTO_Y + (PHOTO_H - drawH) / 2;
   drawTextLeft(190, 390, upper(data.masa_berlaku), "ArrialKTP", 16);
 
   // ================================
-  // 6. Kota & Tanggal – LEBIH KECIL & LEBIH TURUN
+  // 6. Kota & Tanggal – lebih kecil & turun
   // ================================
   drawTextLeft(
     553,
-    345,   // turun sedikit dari 330
+    345,
     `KOTA ${data.kota.toUpperCase()}`,
     "ArrialKTP",
-    12      // lebih kecil dari 16
+    12
   );
   drawTextLeft(
     570,
-    365,    // turun sedikit dari 350
+    365,
     data.terbuat,
     "ArrialKTP",
     12
@@ -252,6 +257,17 @@ const drawY = PHOTO_Y + (PHOTO_H - drawH) / 2;
   ctx.fillText(sign, 540, 395);
 
   console.log("[OK] Generated");
+
+  // Tampilkan tombol download & update result link (data URL)
+  if (downloadLink) {
+    downloadLink.classList.add("show");
+  }
+
+  if (resultLink) {
+    const dataUrl = canvas.toDataURL("image/png");
+    resultLink.href = dataUrl;
+    resultLink.style.display = "inline-block";
+  }
 }
 
 // ===============================
@@ -259,7 +275,23 @@ const drawY = PHOTO_Y + (PHOTO_H - drawH) / 2;
 // ===============================
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
-  await generateKTP();
+
+  // Tampilkan loading popup
+  if (loadingOverlay) {
+    loadingOverlay.classList.add("show");
+  }
+
+  try {
+    await generateKTP();
+  } catch (err) {
+    console.error(err);
+    alert("Terjadi kesalahan saat generate E-KTP.");
+  } finally {
+    // Sembunyikan loading popup
+    if (loadingOverlay) {
+      loadingOverlay.classList.remove("show");
+    }
+  }
 });
 
 // ===============================
@@ -268,12 +300,22 @@ form.addEventListener("submit", async (e) => {
 clearBtn.addEventListener("click", () => {
   form.reset();
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (downloadLink) {
+    downloadLink.classList.remove("show");
+  }
+  if (resultLink) {
+    resultLink.style.display = "none";
+    resultLink.removeAttribute("href");
+  }
 });
 
 // ===============================
 // EVENT: Download PNG
 // ===============================
-downloadBtn.addEventListener("click", () => {
+downloadLink.addEventListener("click", (e) => {
+  e.preventDefault();
+
   canvas.toBlob((blob) => {
     if (!blob) {
       alert("Generate dulu sebelum download!");
@@ -289,5 +331,3 @@ downloadBtn.addEventListener("click", () => {
     URL.revokeObjectURL(url);
   }, "image/png");
 });
-
-
