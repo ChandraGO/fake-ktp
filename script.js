@@ -118,22 +118,28 @@ async function generateKTP() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.drawImage(templateImg, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
- // foto: fit ke kotak 200x323 di kanan (tanpa terpotong & tidak keluar kotak)
+ // foto: fit ke kotak 200x323 di kanan, tapi diperkecil lagi biar ada jarak
 const PHOTO_X = 520;
 const PHOTO_Y = 140;
 const PHOTO_W = 200;
 const PHOTO_H = 323;
 
-// rasio untuk ngepasin gambar ke kotak (fit, bukan crop)
-const ratio = Math.min(PHOTO_W / pasPhotoImg.width, PHOTO_H / pasPhotoImg.height);
+// rasio dasar supaya fotonya muat
+let baseRatio = Math.min(PHOTO_W / pasPhotoImg.width, PHOTO_H / pasPhotoImg.height);
+
+// kecilkan lagi sedikit (misal 0.85 = 85%)
+const SHRINK = 0.85;
+const ratio = baseRatio * SHRINK;
+
 const drawW = pasPhotoImg.width * ratio;
 const drawH = pasPhotoImg.height * ratio;
 
-// biar fotonya center di dalam kotak
+// center di dalam area foto
 const offsetX = PHOTO_X + (PHOTO_W - drawW) / 2;
 const offsetY = PHOTO_Y + (PHOTO_H - drawH) / 2;
 
 ctx.drawImage(pasPhotoImg, offsetX, offsetY, drawW, drawH);
+
 
 
   // nama depan sebagai "tanda tangan"
@@ -226,4 +232,5 @@ clearBtn.addEventListener("click", () => {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   downloadLink.style.display = "none";
 });
+
 
