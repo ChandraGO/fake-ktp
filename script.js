@@ -166,7 +166,7 @@ async function generateKTP() {
   const drawH = srcH * scale;
 
 // posisi gambar hasil crop
-const offsetLeft = -10; // nilai negatif = geser ke kiri
+const offsetLeft = -15; // nilai negatif = geser ke kiri
 
 const drawX = PHOTO_X + (PHOTO_W - drawW) / 2 + offsetLeft;
 const drawY = PHOTO_Y + (PHOTO_H - drawH) / 2;
@@ -289,4 +289,5 @@ downloadBtn.addEventListener("click", () => {
     URL.revokeObjectURL(url);
   }, "image/png");
 });
+
 
