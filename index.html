@@ -3,60 +3,362 @@
 <head>
   <meta charset="utf-8" />
   <title>Fake E-KTP Generator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <style>
-    body {
-      font-family: sans-serif;
-      max-width: 900px;
-      margin: 20px auto;
-      padding: 0 10px;
+    :root {
+      --bg-gradient: radial-gradient(circle at top, #1d4ed8 0, #020617 55%);
+      --card-bg: rgba(15, 23, 42, 0.92);
+      --card-border: rgba(148, 163, 184, 0.4);
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.15);
+      --danger: #f97316;
+      --text-main: #e5e7eb;
+      --text-soft: #9ca3af;
+      --input-bg: rgba(15, 23, 42, 0.95);
+      --input-border: rgba(148, 163, 184, 0.5);
+      --radius-lg: 18px;
     }
 
-    form {
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg-gradient);
+      min-height: 100vh;
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+
+    .page {
+      width: 100%;
+      max-width: 1120px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .header {
+      text-align: center;
+    }
+
+    .title {
+      margin: 0;
+      font-size: clamp(1.8rem, 3vw, 2.4rem);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .subtitle {
+      margin: 4px 0 10px;
+      font-size: 0.9rem;
+      color: var(--text-soft);
+    }
+
+    .header-warning {
+      margin: 0 auto;
+      max-width: 720px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(248, 113, 113, 0.6);
+      background: radial-gradient(circle at left, rgba(248, 113, 113, 0.18), transparent 60%);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: #fecaca;
+    }
+
+    .header-warning span.icon {
+      font-size: 1.1rem;
+    }
+
+    .main {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 10px 20px;
-      margin-bottom: 20px;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+      gap: 18px;
+    }
+
+    @media (max-width: 900px) {
+      .main {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--card-border);
+      box-shadow:
+        0 20px 40px rgba(15, 23, 42, 0.75),
+        0 0 0 1px rgba(15, 23, 42, 0.9);
+      padding: 18px 18px 16px;
+      backdrop-filter: blur(18px);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+    }
+
+    .badge-soft {
+      font-size: 0.75rem;
+      padding: 4px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      background: radial-gradient(circle at right, var(--accent-soft), transparent 60%);
+      color: #bae6fd;
+    }
+
+    /* FORM */
+    #ktp-form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 10px 16px;
     }
 
     label {
       display: flex;
       flex-direction: column;
-      font-size: 14px;
       gap: 4px;
+      font-size: 0.8rem;
+      color: var(--text-soft);
     }
 
-    input, select {
-      padding: 6px 8px;
-      font-size: 14px;
+    input[type="text"],
+    input[type="file"] {
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--input-border);
+      background: var(--input-bg);
+      color: var(--text-main);
+      font-size: 0.88rem;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+
+    input[type="file"] {
+      padding: 7px 10px;
+    }
+
+    input::placeholder {
+      color: rgba(148, 163, 184, 0.7);
+    }
+
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.3);
+      background: #020617;
     }
 
     .full-width {
       grid-column: 1 / -1;
     }
 
-    button {
-      padding: 8px 14px;
-      font-size: 14px;
+    .form-actions {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-top: 8px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 999px;
+      padding: 8px 18px;
+      font-size: 0.9rem;
+      font-weight: 600;
       cursor: pointer;
-      margin-right: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.1s ease, opacity 0.1s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(to right, #2563eb, #38bdf8);
+      color: white;
+      box-shadow: 0 10px 20px rgba(37, 99, 235, 0.45);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 28px rgba(37, 99, 235, 0.6);
+    }
+
+    .btn-secondary {
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--text-soft);
+      border: 1px solid rgba(148, 163, 184, 0.6);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(15, 23, 42, 1);
+      color: #e5e7eb;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: #bae6fd;
+      border: 1px dashed rgba(56, 189, 248, 0.6);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .btn-ghost.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .btn-icon {
+      font-size: 1rem;
+    }
+
+    a.btn {
+      text-decoration: none;
+    }
+
+    /* PREVIEW */
+    .preview-card {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
 
     #preview-container {
-      margin-top: 20px;
+      border-radius: 14px;
+      border: 1px dashed rgba(148, 163, 184, 0.5);
+      padding: 10px;
+      background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.08), rgba(15, 23, 42, 0.96));
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
     #ktp-canvas {
-      border: 1px solid #ccc;
       max-width: 100%;
+      border-radius: 10px;
+      display: block;
     }
 
-    #download-link {
-      display: inline-block;
+    .result-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 0.8rem;
+    }
+
+    .result-links a {
+      color: #bae6fd;
+      text-decoration: none;
+    }
+
+    .result-links a:hover {
+      text-decoration: underline;
+    }
+
+    /* FOOTER */
+    .footer {
       margin-top: 10px;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-soft);
+    }
+
+    .footer a {
+      color: #38bdf8;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* LOADING OVERLAY */
+    #loading-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(4px);
+      z-index: 9999;
+    }
+
+    #loading-overlay.show {
+      display: flex;
+    }
+
+    .loading-popup {
+      background: #0b1120;
+      color: #e5e7eb;
+      padding: 18px 22px;
+      border-radius: 16px;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      box-shadow:
+        0 20px 40px rgba(15, 23, 42, 0.9),
+        0 0 0 1px rgba(15, 23, 42, 0.8);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      min-width: 220px;
+      animation: popup 0.2s ease-out;
+    }
+
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      border: 3px solid rgba(148, 163, 184, 0.25);
+      border-top-color: #38bdf8;
+      animation: spin 0.7s linear infinite;
+    }
+
+    .loading-popup p {
+      margin: 0;
+      font-size: 0.9rem;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes popup {
+      from {
+        transform: translateY(6px) scale(0.97);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
     }
   </style>
 
-  <!-- Load font untuk dipakai di canvas -->
+  <!-- Font khusus untuk canvas -->
   <style>
     @font-face {
       font-family: "ArrialKTP";
@@ -73,93 +375,179 @@
   </style>
 </head>
 <body>
-  <h1>Fake E-KTP Generator (HTML + JS)</h1>
+  <div class="page">
+    <header class="header">
+      <h1 class="title">Fake E-KTP Generator</h1>
+      <p class="subtitle">HTML + JavaScript • Canvas based</p>
+      <p class="header-warning">
+        <span class="icon">⚠️</span>
+        <span>
+          Admin hanya membuat maker ini dengan tujuan bersenang-senang. Segala bentuk penyalahgunaan
+          <strong>bukan tanggung jawab admin</strong>. Mohon digunakan dengan bijak.
+        </span>
+      </p>
+    </header>
 
-  <form id="ktp-form">
-    <label>
-      Provinsi
-      <input type="text" id="provinsi" name="provinsi" required value="jakarta selatan" />
-    </label>
-    <label>
-      Kota / Kab
-      <input type="text" id="kota" name="kota" required value="jakarta" />
-    </label>
-    <label>
-      NIK
-      <input type="text" id="nik" name="nik" required value="127xxxx" />
-    </label>
-    <label>
-      Nama
-      <input type="text" id="nama" name="nama" required value="kiana dimitri" />
-    </label>
-    <label>
-      Tempat / Tgl Lahir
-      <input type="text" id="ttl" name="ttl" required value="jakarta, 01-09-2000" />
-    </label>
-    <label>
-      Jenis Kelamin
-      <input type="text" id="jenis_kelamin" name="jenis_kelamin" required value="laki-laki" />
-    </label>
-    <label>
-      Golongan Darah
-      <input type="text" id="golongan_darah" name="golongan_darah" required value="o" />
-    </label>
-    <label class="full-width">
-      Alamat
-      <input type="text" id="alamat" name="alamat" required value="jl xxx xxx xxx" />
-    </label>
-    <label>
-      RT / RW
-      <input type="text" id="rtRw" name="rtRw" required value="000/000" />
-    </label>
-    <label>
-      Kel / Desa
-      <input type="text" id="kel_desa" name="kel_desa" required value="xxx" />
-    </label>
-    <label>
-      Kecamatan
-      <input type="text" id="kecamatan" name="kecamatan" required value="xxx" />
-    </label>
-    <label>
-      Agama
-      <input type="text" id="agama" name="agama" required value="xxx" />
-    </label>
-    <label>
-      Status Perkawinan
-      <input type="text" id="status" name="status" required value="belum menikah" />
-    </label>
-    <label>
-      Pekerjaan
-      <input type="text" id="pekerjaan" name="pekerjaan" required value="wiraswasta" />
-    </label>
-    <label>
-      Kewarganegaraan
-      <input type="text" id="kewarganegaraan" name="kewarganegaraan" required value="wni" />
-    </label>
-    <label>
-      Masa Berlaku
-      <input type="text" id="masa_berlaku" name="masa_berlaku" required value="seumur hidup" />
-    </label>
-    <label>
-      Tanggal Terbuat
-      <input type="text" id="terbuat" name="terbuat" required value="19-10-2023" />
-    </label>
+    <main class="main">
+      <!-- FORM CARD -->
+      <section class="card">
+        <div class="card-header">
+          <div class="card-title">Data E-KTP</div>
+          <div class="badge-soft">Input Data</div>
+        </div>
 
-    <label class="full-width">
-      Pas Photo (JPG/PNG)
-      <input type="file" id="pas_photo" name="pas_photo" accept="image/*" required />
-    </label>
+        <form id="ktp-form">
+          <label>
+            Provinsi
+            <input type="text" id="provinsi" name="provinsi" required value="jakarta selatan" />
+          </label>
 
-    <div class="full-width">
-      <button type="submit">Generate E-KTP</button>
-      <button type="button" id="clear-btn">Bersihkan</button>
+          <label>
+            Kota / Kab
+            <input type="text" id="kota" name="kota" required value="jakarta" />
+          </label>
+
+          <label>
+            NIK
+            <input type="text" id="nik" name="nik" required value="127xxxx" />
+          </label>
+
+          <label>
+            Nama
+            <input type="text" id="nama" name="nama" required value="kiana dimitri" />
+          </label>
+
+          <label>
+            Tempat / Tgl Lahir
+            <input type="text" id="ttl" name="ttl" required value="jakarta, 01-09-2000" />
+          </label>
+
+          <label>
+            Jenis Kelamin
+            <input type="text" id="jenis_kelamin" name="jenis_kelamin" required value="laki-laki" />
+          </label>
+
+          <label>
+            Golongan Darah
+            <input type="text" id="golongan_darah" name="golongan_darah" required value="o" />
+          </label>
+
+          <label>
+            Alamat
+            <input type="text" id="alamat" name="alamat" required value="jl xxx xxx xxx" />
+          </label>
+
+          <label>
+            RT / RW
+            <input type="text" id="rtRw" name="rtRw" required value="000/000" />
+          </label>
+
+          <label>
+            Kel / Desa
+            <input type="text" id="kel_desa" name="kel_desa" required value="xxx" />
+          </label>
+
+          <label>
+            Kecamatan
+            <input type="text" id="kecamatan" name="kecamatan" required value="xxx" />
+          </label>
+
+          <label>
+            Agama
+            <input type="text" id="agama" name="agama" required value="xxx" />
+          </label>
+
+          <label>
+            Status Perkawinan
+            <input type="text" id="status" name="status" required value="belum menikah" />
+          </label>
+
+          <label>
+            Pekerjaan
+            <input type="text" id="pekerjaan" name="pekerjaan" required value="wiraswasta" />
+          </label>
+
+          <label>
+            Kewarganegaraan
+            <input type="text" id="kewarganegaraan" name="kewarganegaraan" required value="wni" />
+          </label>
+
+          <label>
+            Masa Berlaku
+            <input type="text" id="masa_berlaku" name="masa_berlaku" required value="seumur hidup" />
+          </label>
+
+          <label>
+            Tanggal Terbuat
+            <input type="text" id="terbuat" name="terbuat" required value="19-10-2023" />
+          </label>
+
+          <label class="full-width">
+            Pas Photo (JPG/PNG)
+            <input type="file" id="pas_photo" name="pas_photo" accept="image/*" required />
+          </label>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+              <span class="btn-icon">⚙️</span> Generate E-KTP
+            </button>
+            <button type="button" id="clear-btn" class="btn btn-secondary">
+              ✨ Bersihkan
+            </button>
+
+            <a
+              id="download-link"
+              href="#"
+              class="btn btn-ghost"
+              download="fake-ektp.png"
+            >
+              ⬇️ Download PNG
+            </a>
+          </div>
+        </form>
+      </section>
+
+      <!-- PREVIEW CARD -->
+      <section class="card preview-card">
+        <div class="card-header">
+          <div class="card-title">Preview</div>
+          <div class="badge-soft">Canvas</div>
+        </div>
+
+        <div id="preview-container">
+          <canvas id="ktp-canvas" width="720" height="463"></canvas>
+        </div>
+
+        <div class="result-links">
+          <a
+            id="result-link"
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+            style="display:none;"
+          >
+            🔗 Result link (buka hasil di tab baru / untuk scrape)
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>
+        Made with ❤️ by
+        <a href="https://jagoanproject.web.id" target="_blank" rel="noopener noreferrer">
+          Jagoan Project
+        </a>
+      </p>
+    </footer>
+  </div>
+
+  <!-- LOADING POPUP -->
+  <div id="loading-overlay">
+    <div class="loading-popup">
+      <div class="spinner"></div>
+      <p>Sedang generate E-KTP... mohon tunggu sebentar</p>
     </div>
-  </form>
-
-  <div id="preview-container">
-    <canvas id="ktp-canvas" width="720" height="463"></canvas>
-    <br />
-    <a id="download-link" href="#" download="fake-ektp.png" style="display:none;">Download hasil sebagai PNG</a>
   </div>
 
   <script type="module" src="./script.js"></script>
