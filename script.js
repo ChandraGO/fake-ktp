@@ -132,41 +132,52 @@ async function generateKTP() {
   // ================================
   // 2. FOTO – CROP TENGAH (PAS FOTO)
   // ================================
-  const PHOTO_X = 520;
-  const PHOTO_Y = 130;     // dinaikkan dari 140 ke 130
-  const PHOTO_W = 200;
-  const PHOTO_H = 310;     // lebih pendek biar jauh dari ttd
+  // ================================
+// 2. FOTO – CROP TENGAH + SHRINK
+// ================================
+const PHOTO_X = 520;
+const PHOTO_Y = 120;   // dinaikkan sedikit lagi
+const PHOTO_W = 200;
+const PHOTO_H = 280;   // frame lebih pendek
 
-  const frameAspect = PHOTO_W / PHOTO_H;
-  const imgAspect = pasPhotoImg.width / pasPhotoImg.height;
+const frameAspect = PHOTO_W / PHOTO_H;
+const imgAspect = pasPhotoImg.width / pasPhotoImg.height;
 
-  let srcX, srcY, srcW, srcH;
+let srcX, srcY, srcW, srcH;
 
-  if (imgAspect > frameAspect) {
-    // Crop kiri–kanan
-    srcH = pasPhotoImg.height;
-    srcW = srcH * frameAspect;
-    srcX = (pasPhotoImg.width - srcW) / 2;
-    srcY = 0;
-  } else {
-    // Crop atas–bawah
-    srcW = pasPhotoImg.width;
-    srcH = srcW / frameAspect;
-    srcX = 0;
-    srcY = (pasPhotoImg.height - srcH) / 2;
-  }
+// crop tengah (kiri-kanan / atas-bawah)
+if (imgAspect > frameAspect) {
+  // foto lebih lebar → potong kiri-kanan
+  srcH = pasPhotoImg.height;
+  srcW = srcH * frameAspect;
+  srcX = (pasPhotoImg.width - srcW) / 2;
+  srcY = 0;
+} else {
+  // foto lebih tinggi → potong atas-bawah
+  srcW = pasPhotoImg.width;
+  srcH = srcW / frameAspect;
+  srcX = 0;
+  srcY = (pasPhotoImg.height - srcH) / 2;
+}
 
-  const INNER_MARGIN = 8;
-  const drawX = PHOTO_X + INNER_MARGIN;
-  const drawY = PHOTO_Y + INNER_MARGIN;
-  const drawW = PHOTO_W - INNER_MARGIN * 2;
-  const drawH = PHOTO_H - INNER_MARGIN * 2;
+// scale supaya muat, lalu perkecil lagi (shrink)
+const baseScale = Math.min(PHOTO_W / srcW, PHOTO_H / srcH);
+const SHRINK = 0.80;  // ubah jadi 0.75 kalau mau LEBIH kecil lagi
+const scale = baseScale * SHRINK;
 
-  ctx.drawImage(
-    pasPhotoImg,
-    srcX, srcY, srcW, srcH,
-    drawX, drawY, drawW, drawH
-  );
+const drawW = srcW * scale;
+const drawH = srcH * scale;
+
+// center di dalam area foto
+const drawX = PHOTO_X + (PHOTO_W - drawW) / 2;
+const drawY = PHOTO_Y + (PHOTO_H - drawH) / 2;
+
+ctx.drawImage(
+  pasPhotoImg,
+  srcX, srcY, srcW, srcH,
+  drawX, drawY, drawW, drawH
+);
+
 
   // ================================
   // 3. Teks Judul Provinsi & Kota
@@ -273,3 +284,4 @@ downloadBtn.addEventListener("click", () => {
     URL.revokeObjectURL(url);
   }, "image/png");
 });
+
