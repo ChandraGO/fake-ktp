@@ -162,7 +162,7 @@ if (imgAspect > frameAspect) {
 
 // scale supaya muat, lalu perkecil lagi (shrink)
 const baseScale = Math.min(PHOTO_W / srcW, PHOTO_H / srcH);
-const SHRINK = 0.20;  // ubah jadi 0.75 kalau mau LEBIH kecil lagi
+const SHRINK = 0.35;  // ubah jadi 0.75 kalau mau LEBIH kecil lagi
 const scale = baseScale * SHRINK;
 
 const drawW = srcW * scale;
@@ -284,6 +284,7 @@ downloadBtn.addEventListener("click", () => {
     URL.revokeObjectURL(url);
   }, "image/png");
 });
+
 
 
 
