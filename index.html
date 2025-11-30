@@ -1,555 +1,461 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="utf-8" />
-  <title>Fake E-KTP Generator</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
+  <title>Fake KTP Fun</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <!-- CSS -->
   <style>
-    :root {
-      --bg-gradient: radial-gradient(circle at top, #1d4ed8 0, #020617 55%);
-      --card-bg: rgba(15, 23, 42, 0.92);
-      --card-border: rgba(148, 163, 184, 0.4);
-      --accent: #38bdf8;
-      --accent-soft: rgba(56, 189, 248, 0.15);
-      --danger: #f97316;
-      --text-main: #e5e7eb;
-      --text-soft: #9ca3af;
-      --input-bg: rgba(15, 23, 42, 0.95);
-      --input-border: rgba(148, 163, 184, 0.5);
-      --radius-lg: 18px;
-    }
-
+    /* ================== GLOBAL ================== */
     * {
       box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
     body {
-      margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: var(--bg-gradient);
       min-height: 100vh;
-      color: var(--text-main);
+      background: linear-gradient(135deg, #ffecd2, #fcb69f);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #222;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ================== HEADER ================== */
+    header {
+      background: linear-gradient(90deg, #ff6a88, #ff99ac);
+      color: #ffffff;
+      padding: 16px 24px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    header h1 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    header span {
+      font-size: 12px;
+      opacity: 0.9;
+    }
+
+    /* ================== MAIN CONTENT ================== */
+    main {
+      flex: 1;
+      padding: 24px 16px 32px;
       display: flex;
       justify-content: center;
-      padding: 24px 16px;
+      align-items: flex-start;
     }
 
-    .page {
+    .container {
       width: 100%;
-      max-width: 1120px;
+      max-width: 960px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.12);
+      padding: 24px 20px 28px;
+      backdrop-filter: blur(6px);
+    }
+
+    .title-row {
       display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .header {
-      text-align: center;
-    }
-
-    .title {
-      margin: 0;
-      font-size: clamp(1.8rem, 3vw, 2.4rem);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      font-weight: 700;
-    }
-
-    .subtitle {
-      margin: 4px 0 10px;
-      font-size: 0.9rem;
-      color: var(--text-soft);
-    }
-
-    .header-warning {
-      margin: 0 auto;
-      max-width: 720px;
-      padding: 10px 14px;
-      border-radius: 999px;
-      border: 1px solid rgba(248, 113, 113, 0.6);
-      background: radial-gradient(circle at left, rgba(248, 113, 113, 0.18), transparent 60%);
-      display: inline-flex;
       align-items: center;
-      gap: 8px;
-      font-size: 0.85rem;
-      color: #fecaca;
-    }
-
-    .header-warning span.icon {
-      font-size: 1.1rem;
-    }
-
-    .main {
-      display: grid;
-      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-      gap: 18px;
-    }
-
-    @media (max-width: 900px) {
-      .main {
-        grid-template-columns: minmax(0, 1fr);
-      }
-    }
-
-    .card {
-      background: var(--card-bg);
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--card-border);
-      box-shadow:
-        0 20px 40px rgba(15, 23, 42, 0.75),
-        0 0 0 1px rgba(15, 23, 42, 0.9);
-      padding: 18px 18px 16px;
-      backdrop-filter: blur(18px);
-    }
-
-    .card-header {
-      display: flex;
       justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
+      gap: 12px;
+      margin-bottom: 16px;
     }
 
-    .card-title {
-      font-size: 1rem;
-      font-weight: 600;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: var(--text-soft);
+    .title-row h2 {
+      font-size: 18px;
     }
 
-    .badge-soft {
-      font-size: 0.75rem;
-      padding: 4px 9px;
-      border-radius: 999px;
-      border: 1px solid rgba(56, 189, 248, 0.4);
-      background: radial-gradient(circle at right, var(--accent-soft), transparent 60%);
-      color: #bae6fd;
-    }
-
-    /* FORM */
-    #ktp-form {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-      gap: 10px 16px;
-    }
-
-    label {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      font-size: 0.8rem;
-      color: var(--text-soft);
-    }
-
-    input[type="text"],
-    input[type="file"] {
-      padding: 8px 10px;
-      border-radius: 10px;
-      border: 1px solid var(--input-border);
-      background: var(--input-bg);
-      color: var(--text-main);
-      font-size: 0.88rem;
-      outline: none;
-      transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
-    }
-
-    input[type="file"] {
-      padding: 7px 10px;
-    }
-
-    input::placeholder {
-      color: rgba(148, 163, 184, 0.7);
-    }
-
-    input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.3);
-      background: #020617;
-    }
-
-    .full-width {
-      grid-column: 1 / -1;
-    }
-
-    .form-actions {
-      grid-column: 1 / -1;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
-      margin-top: 8px;
-    }
-
-    .btn {
-      border: none;
-      border-radius: 999px;
-      padding: 8px 18px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      cursor: pointer;
+    .badge {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.1s ease, opacity 0.1s ease;
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(255, 106, 136, 0.12);
+      color: #d72672;
+      font-weight: 600;
     }
 
+    .badge-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #ff3366;
+      box-shadow: 0 0 0 4px rgba(255, 51, 102, 0.35);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      border: 1px solid rgba(0,0,0,0.05);
+      padding: 14px 14px 16px;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.06);
+    }
+
+    .card h3 {
+      margin-bottom: 8px;
+      font-size: 15px;
+    }
+
+    .card p {
+      font-size: 13px;
+      opacity: 0.8;
+      margin-bottom: 10px;
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    label {
+      font-size: 12px;
+      font-weight: 600;
+      opacity: 0.85;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(0,0,0,0.12);
+      font-size: 13px;
+      outline: none;
+      transition: border 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+      background: rgba(255,255,255,0.9);
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    select:focus {
+      border-color: #ff6a88;
+      box-shadow: 0 0 0 1px rgba(255,106,136,0.4);
+      background: #fff;
+    }
+
+    /* ================== BUTTONS ================== */
+    button,
+    .btn,
     .btn-primary {
-      background: linear-gradient(to right, #2563eb, #38bdf8);
-      color: white;
-      box-shadow: 0 10px 20px rgba(37, 99, 235, 0.45);
+      border: none;
+      border-radius: 999px;
+      padding: 10px 22px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      background: linear-gradient(135deg, #ff6a00, #ee0979);
+      color: #fff;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.18);
+      transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+      white-space: nowrap;
     }
 
+    button:hover,
+    .btn:hover,
     .btn-primary:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 14px 28px rgba(37, 99, 235, 0.6);
+      transform: translateY(-1px) scale(1.02);
+      box-shadow: 0 6px 14px rgba(0,0,0,0.25);
+      opacity: 0.96;
+    }
+
+    button:active,
+    .btn:active,
+    .btn-primary:active {
+      transform: translateY(1px) scale(0.98);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     }
 
     .btn-secondary {
-      background: rgba(15, 23, 42, 0.9);
-      color: var(--text-soft);
-      border: 1px solid rgba(148, 163, 184, 0.6);
+      background: linear-gradient(135deg, #36d1dc, #5b86e5);
     }
 
-    .btn-secondary:hover {
-      background: rgba(15, 23, 42, 1);
-      color: #e5e7eb;
-    }
-
-    .btn-ghost {
-      background: transparent;
-      color: #bae6fd;
-      border: 1px dashed rgba(56, 189, 248, 0.6);
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .btn-ghost.show {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .btn-icon {
-      font-size: 1rem;
-    }
-
-    a.btn {
-      text-decoration: none;
-    }
-
-    /* PREVIEW */
-    .preview-card {
+    .actions-row {
+      margin-top: 16px;
       display: flex;
-      flex-direction: column;
+      flex-wrap: wrap;
       gap: 10px;
+      justify-content: flex-end;
     }
 
-    #preview-container {
-      border-radius: 14px;
-      border: 1px dashed rgba(148, 163, 184, 0.5);
-      padding: 10px;
-      background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.08), rgba(15, 23, 42, 0.96));
-      display: flex;
-      justify-content: center;
-      align-items: center;
+    /* ================== FOOTER ================== */
+    footer {
+      text-align: center;
+      padding: 10px 12px 16px;
+      font-size: 11px;
+      color: rgba(0,0,0,0.55);
     }
 
-    #ktp-canvas {
-      max-width: 100%;
-      border-radius: 10px;
+    /* ================== POPUP WARNING ================== */
+    #popup-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      display: none;
+      z-index: 1000;
+    }
+
+    #warning-popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.9);
+      background: #ffffff;
+      padding: 24px 24px 18px;
+      border-radius: 18px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+      max-width: 360px;
+      width: 90%;
+      text-align: center;
+      display: none;
+      z-index: 1001;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+      opacity: 0;
+    }
+
+    #warning-popup.show {
+      display: block;
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    #popup-overlay.show {
       display: block;
     }
 
-    .result-links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      font-size: 0.8rem;
+    #warning-popup h2 {
+      margin-top: 0;
+      margin-bottom: 8px;
+      font-size: 20px;
+      color: #ee0979;
     }
 
-    .result-links a {
-      color: #bae6fd;
-      text-decoration: none;
+    #warning-popup p {
+      font-size: 14px;
+      margin-bottom: 18px;
     }
 
-    .result-links a:hover {
-      text-decoration: underline;
+    #warning-popup small {
+      font-size: 11px;
+      opacity: 0.75;
+      display: block;
+      margin-bottom: 14px;
     }
 
-    /* FOOTER */
-    .footer {
-      margin-top: 10px;
-      text-align: center;
-      font-size: 0.85rem;
-      color: var(--text-soft);
-    }
-
-    .footer a {
-      color: #38bdf8;
-      font-weight: 600;
-      text-decoration: none;
-    }
-
-    .footer a:hover {
-      text-decoration: underline;
-    }
-
-    /* LOADING OVERLAY */
-    #loading-overlay {
-      position: fixed;
-      inset: 0;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      background: rgba(15, 23, 42, 0.8);
-      backdrop-filter: blur(4px);
-      z-index: 9999;
-    }
-
-    #loading-overlay.show {
-      display: flex;
-    }
-
-    .loading-popup {
-      background: #0b1120;
-      color: #e5e7eb;
-      padding: 18px 22px;
-      border-radius: 16px;
-      border: 1px solid rgba(56, 189, 248, 0.4);
-      box-shadow:
-        0 20px 40px rgba(15, 23, 42, 0.9),
-        0 0 0 1px rgba(15, 23, 42, 0.8);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-      min-width: 220px;
-      animation: popup 0.2s ease-out;
-    }
-
-    .spinner {
-      width: 32px;
-      height: 32px;
-      border-radius: 999px;
-      border: 3px solid rgba(148, 163, 184, 0.25);
-      border-top-color: #38bdf8;
-      animation: spin 0.7s linear infinite;
-    }
-
-    .loading-popup p {
-      margin: 0;
-      font-size: 0.9rem;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
+    /* ================== RESPONSIVE ================== */
+    @media (max-width: 600px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
       }
-    }
-
-    @keyframes popup {
-      from {
-        transform: translateY(6px) scale(0.97);
-        opacity: 0;
+      .title-row {
+        flex-direction: column;
+        align-items: flex-start;
       }
-      to {
-        transform: translateY(0) scale(1);
-        opacity: 1;
+      .actions-row {
+        justify-content: flex-start;
       }
-    }
-  </style>
-
-  <!-- Font khusus untuk canvas -->
-  <style>
-    @font-face {
-      font-family: "ArrialKTP";
-      src: url("./font/Arrial.ttf") format("truetype");
-    }
-    @font-face {
-      font-family: "OcrKTP";
-      src: url("./font/Ocr.ttf") format("truetype");
-    }
-    @font-face {
-      font-family: "SignKTP";
-      src: url("./font/Sign.ttf") format("truetype");
     }
   </style>
 </head>
 <body>
-  <div class="page">
-    <header class="header">
-      <h1 class="title">Fake E-KTP Generator</h1>
-      <p class="subtitle">HTML + JavaScript • Canvas based</p>
-      <p class="header-warning">
-        <span class="icon">⚠️</span>
-        <span>
-          Admin hanya membuat maker ini dengan tujuan bersenang-senang. Segala bentuk penyalahgunaan
-          <strong>bukan tanggung jawab admin</strong>. Mohon digunakan dengan bijak.
-        </span>
-      </p>
-    </header>
 
-    <main class="main">
-      <!-- FORM CARD -->
-      <section class="card">
-        <div class="card-header">
-          <div class="card-title">Data E-KTP</div>
-          <div class="badge-soft">Input Data</div>
-        </div>
-
-        <form id="ktp-form">
-          <label>
-            Provinsi
-            <input type="text" id="provinsi" name="provinsi" required value="jakarta selatan" />
-          </label>
-
-          <label>
-            Kota / Kab
-            <input type="text" id="kota" name="kota" required value="jakarta" />
-          </label>
-
-          <label>
-            NIK
-            <input type="text" id="nik" name="nik" required value="127xxxx" />
-          </label>
-
-          <label>
-            Nama
-            <input type="text" id="nama" name="nama" required value="kiana dimitri" />
-          </label>
-
-          <label>
-            Tempat / Tgl Lahir
-            <input type="text" id="ttl" name="ttl" required value="jakarta, 01-09-2000" />
-          </label>
-
-          <label>
-            Jenis Kelamin
-            <input type="text" id="jenis_kelamin" name="jenis_kelamin" required value="laki-laki" />
-          </label>
-
-          <label>
-            Golongan Darah
-            <input type="text" id="golongan_darah" name="golongan_darah" required value="o" />
-          </label>
-
-          <label>
-            Alamat
-            <input type="text" id="alamat" name="alamat" required value="jl xxx xxx xxx" />
-          </label>
-
-          <label>
-            RT / RW
-            <input type="text" id="rtRw" name="rtRw" required value="000/000" />
-          </label>
-
-          <label>
-            Kel / Desa
-            <input type="text" id="kel_desa" name="kel_desa" required value="xxx" />
-          </label>
-
-          <label>
-            Kecamatan
-            <input type="text" id="kecamatan" name="kecamatan" required value="xxx" />
-          </label>
-
-          <label>
-            Agama
-            <input type="text" id="agama" name="agama" required value="xxx" />
-          </label>
-
-          <label>
-            Status Perkawinan
-            <input type="text" id="status" name="status" required value="belum menikah" />
-          </label>
-
-          <label>
-            Pekerjaan
-            <input type="text" id="pekerjaan" name="pekerjaan" required value="wiraswasta" />
-          </label>
-
-          <label>
-            Kewarganegaraan
-            <input type="text" id="kewarganegaraan" name="kewarganegaraan" required value="wni" />
-          </label>
-
-          <label>
-            Masa Berlaku
-            <input type="text" id="masa_berlaku" name="masa_berlaku" required value="seumur hidup" />
-          </label>
-
-          <label>
-            Tanggal Terbuat
-            <input type="text" id="terbuat" name="terbuat" required value="19-10-2023" />
-          </label>
-
-          <label class="full-width">
-            Pas Photo (JPG/PNG)
-            <input type="file" id="pas_photo" name="pas_photo" accept="image/*" required />
-          </label>
-
-          <div class="form-actions">
-            <button type="submit" class="btn btn-primary">
-              <span class="btn-icon">⚙️</span> Generate E-KTP
-            </button>
-            <button type="button" id="clear-btn" class="btn btn-secondary">
-              ✨ Bersihkan
-            </button>
-
-            <a
-              id="download-link"
-              href="#"
-              class="btn btn-ghost"
-              download="fake-ektp.png"
-            >
-              ⬇️ Download PNG
-            </a>
-          </div>
-        </form>
-      </section>
-
-      <!-- PREVIEW CARD -->
-      <section class="card preview-card">
-        <div class="card-header">
-          <div class="card-title">Preview</div>
-          <div class="badge-soft">Canvas</div>
-        </div>
-
-        <div id="preview-container">
-          <canvas id="ktp-canvas" width="720" height="463"></canvas>
-        </div>
-
-        <div class="result-links">
-          <a
-            id="result-link"
-            href="#"
-            target="_blank"
-            rel="noopener noreferrer"
-            style="display:none;"
-          >
-            🔗 Result link (buka hasil di tab baru / untuk scrape)
-          </a>
-        </div>
-      </section>
-    </main>
-
-    <footer class="footer">
-      <p>
-        Made with ❤️ by
-        <a href="https://jagoanproject.web.id" target="_blank" rel="noopener noreferrer">
-          Jagoan Project
-        </a>
-      </p>
-    </footer>
-  </div>
-
-  <!-- LOADING POPUP -->
-  <div id="loading-overlay">
-    <div class="loading-popup">
-      <div class="spinner"></div>
-      <p>Sedang generate E-KTP... mohon tunggu sebentar</p>
+  <!-- ================== HEADER ================== -->
+  <header>
+    <div>
+      <h1>Fake KTP Generator</h1>
+      <span>Untuk hiburan saja, bukan dokumen resmi.</span>
     </div>
+    <div class="badge">
+      <span class="badge-dot"></span>
+      Mode Fun
+    </div>
+  </header>
+
+  <!-- ================== MAIN ================== -->
+  <main>
+    <div class="container">
+      <div class="title-row">
+        <h2>Isi Data Sesukamu 😜</h2>
+        <span style="font-size: 12px; opacity: 0.7;">Semua data hanya tampil di layar ini.</span>
+      </div>
+
+      <div class="grid">
+        <!-- Card Input Data -->
+        <div class="card">
+          <h3>Data Utama</h3>
+          <p>Masukkan data palsu versi hiburanmu di sini.</p>
+
+          <div class="field-group">
+            <div>
+              <label for="nama">Nama</label>
+              <input type="text" id="nama" placeholder="Contoh: Saitama S.H.">
+            </div>
+            <div>
+              <label for="nik">NIK</label>
+              <input type="text" id="nik" placeholder="1234 5678 9012 3456">
+            </div>
+            <div>
+              <label for="alamat">Alamat</label>
+              <input type="text" id="alamat" placeholder="Jl. Kenangan Palsu No. 404">
+            </div>
+          </div>
+        </div>
+
+        <!-- Card Pengaturan -->
+        <div class="card">
+          <h3>Pengaturan</h3>
+          <p>Bagian ini cuma contoh pengaturan untuk mempercantik UI.</p>
+
+          <div class="field-group">
+            <div>
+              <label for="warna">Tema Warna KTP</label>
+              <select id="warna">
+                <option value="biru">Biru Kalem</option>
+                <option value="merah">Merah Merona</option>
+                <option value="hijau">Hijau Segar</option>
+                <option value="random">Acak Ceria</option>
+              </select>
+            </div>
+            <div>
+              <label for="tahun">Tahun Pembuatan</label>
+              <input type="number" id="tahun" placeholder="2025">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contoh Tombol Aksi -->
+      <div class="actions-row">
+        <button type="button" class="btn-secondary" id="btn-random">
+          Random Data
+        </button>
+        <button type="button" class="btn-primary" id="btn-generate">
+          Generate KTP Palsu
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- ================== FOOTER ================== -->
+  <footer>
+    Peringatan: web ini hanya untuk kesenangan semata. Mohon gunakan dengan bijak.  
+    Tidak ada data yang dikirim ke server.
+  </footer>
+
+  <!-- ================== AUDIO BACKGROUND ================== -->
+  <audio id="bg-music" src="./musik.mp3" preload="auto" loop></audio>
+
+  <!-- ================== POPUP WARNING ================== -->
+  <div id="popup-overlay"></div>
+
+  <div id="warning-popup">
+    <h2>Peringatan</h2>
+    <p>
+      Web ini hanya untuk kesenangan semata.<br>
+      Mohon gunakan dengan bijak.
+    </p>
+    <small>
+      Dengan menekan tombol "Oke", kamu paham bahwa ini hanya untuk hiburan
+      dan bukan dokumen resmi.
+    </small>
+    <button id="popup-ok" class="btn-primary">
+      Oke
+    </button>
   </div>
 
-  <script type="module" src="./script.js"></script>
+  <!-- ================== SCRIPT ================== -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const popup   = document.getElementById('warning-popup');
+      const overlay = document.getElementById('popup-overlay');
+      const okBtn   = document.getElementById('popup-ok');
+      const audio   = document.getElementById('bg-music');
+
+      // Tombol contoh (opsional)
+      const btnRandom   = document.getElementById('btn-random');
+      const btnGenerate = document.getElementById('btn-generate');
+      const namaInput   = document.getElementById('nama');
+      const nikInput    = document.getElementById('nik');
+      const alamatInput = document.getElementById('alamat');
+
+      // ===== POPUP MUNCUL SAAT PERTAMA HALAMAN DIBUKA =====
+      if (popup && overlay) {
+        overlay.classList.add('show');
+        popup.classList.add('show');
+      }
+
+      // ===== KLIK "OKE" → POPUP HILANG + MUSIK PLAY =====
+      if (okBtn && overlay && popup && audio) {
+        okBtn.addEventListener('click', function () {
+          overlay.classList.remove('show');
+          popup.classList.remove('show');
+
+          // Play musik setelah ada interaksi (supaya tidak diblokir browser)
+          audio.play().catch(function (err) {
+            console.log('Autoplay gagal, user perlu interaksi lain:', err);
+          });
+        });
+      }
+
+      // ===== CONTOH LOGIC FUN (tidak wajib) =====
+      if (btnRandom && namaInput && nikInput && alamatInput) {
+        btnRandom.addEventListener('click', function () {
+          const namaFake = ['Saitama', 'Levi Ackerman', 'Udin Sedunia', 'John Wick', 'Mbak Kunti'];
+          const alamatFake = [
+            'Jl. Kenangan No. 404',
+            'Jl. Jalan Aja Dulu No. 7',
+            'Gg. Lupa Nama RT 05',
+            'Perumahan Halu Indah Blok Z',
+            'Apartemen Mimpi Lantai 13'
+          ];
+
+          const randNama   = namaFake[Math.floor(Math.random() * namaFake.length)];
+          const randAlamat = alamatFake[Math.floor(Math.random() * alamatFake.length)];
+          const randNik    = String(Date.now()).slice(-16).replace(/(\d{4})(?=\d)/g, '$1 ');
+
+          namaInput.value   = randNama;
+          alamatInput.value = randAlamat;
+          nikInput.value    = randNik;
+        });
+      }
+
+      if (btnGenerate) {
+        btnGenerate.addEventListener('click', function () {
+          alert('Di sini nanti kamu bisa tampilkan gambar KTP palsu.\nSekarang ini cuma contoh tombol saja 😄');
+        });
+      }
+    });
+  </script>
+
 </body>
 </html>
