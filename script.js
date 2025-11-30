@@ -1,6 +1,6 @@
 // script.js
 
-// ukuran canvas mengikuti Template.png (720 x 463 di projek aslinya)
+// ukuran canvas mengikuti Template.png (720 x 463)
 const CANVAS_WIDTH = 720;
 const CANVAS_HEIGHT = 463;
 
@@ -10,10 +10,13 @@ const form = document.getElementById("ktp-form");
 const canvas = document.getElementById("ktp-canvas");
 const ctx = canvas.getContext("2d");
 const pasPhotoInput = document.getElementById("pas_photo");
-const downloadLink = document.getElementById("download-link");
-const clearBtn = document.getElementById("clear-btn");
 
-// helper: load image dari url (Template / pas photo)
+const clearBtn = document.getElementById("clear-btn");
+const downloadBtn = document.getElementById("download-btn");
+
+// ===============================
+// HELPER: Load image dari URL
+// ===============================
 function loadImageFromURL(url) {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -23,7 +26,9 @@ function loadImageFromURL(url) {
   });
 }
 
-// helper: load image dari file input
+// ===============================
+// HELPER: Load image dari file input
+// ===============================
 function loadImageFromFile(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -38,7 +43,9 @@ function loadImageFromFile(file) {
   });
 }
 
-// load font biar canvas bisa pakai
+// ===============================
+// Load Fonts untuk canvas
+// ===============================
 async function loadFonts() {
   const fArrial = new FontFace("ArrialKTP", "url(./font/Arrial.ttf)");
   const fOcr = new FontFace("OcrKTP", "url(./font/Ocr.ttf)");
@@ -51,7 +58,9 @@ async function loadFonts() {
   document.fonts.add(fSign);
 }
 
-// ambil data dari form
+// ===============================
+// Ambil data form
+// ===============================
 function getFormData() {
   const get = (id) => document.getElementById(id).value;
 
@@ -76,7 +85,9 @@ function getFormData() {
   };
 }
 
-// gambar teks dengan pengaturan seperti di Pillow
+// ===============================
+// Helper tulis teks
+// ===============================
 function drawTextLeft(x, y, text, font, size) {
   ctx.font = `${size}px ${font}`;
   ctx.textAlign = "left";
@@ -88,68 +99,78 @@ function drawTextLeft(x, y, text, font, size) {
 function drawTextCenter(x, y, text, font, size) {
   ctx.font = `${size}px ${font}`;
   ctx.textAlign = "center";
-  ctx.textBaseline = "middle"; // mendekati anchor="ms"
+  ctx.textBaseline = "middle";
   ctx.fillStyle = "#000000";
   ctx.fillText(text, x, y);
 }
 
-// utama: generate KTP di canvas
+// ===============================
+// MAIN: Generate E-KTP
+// ===============================
 async function generateKTP() {
   const data = getFormData();
 
   const file = pasPhotoInput.files[0];
   if (!file) {
-    alert("Pas photo belum dipilih.");
+    alert("Pas photo belum dipilih!");
     return;
   }
 
-  // pastikan font & gambar ke-load
   await loadFonts();
+
   const [templateImg, pasPhotoImg] = await Promise.all([
     loadImageFromURL(templateSrc),
     loadImageFromFile(file)
   ]);
 
-  // set ukuran canvas (kalau mau dinamis)
   canvas.width = CANVAS_WIDTH;
   canvas.height = CANVAS_HEIGHT;
 
-  // gambar template dulu
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // 1. gambar template
   ctx.drawImage(templateImg, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
- // foto: fit ke kotak 200x323 di kanan, tapi diperkecil lagi biar ada jarak
-const PHOTO_X = 520;
-const PHOTO_Y = 140;
-const PHOTO_W = 200;
-const PHOTO_H = 323;
+  // ================================
+  // 2. FOTO – CROP TENGAH (PAS FOTO)
+  // ================================
+  const PHOTO_X = 520;
+  const PHOTO_Y = 130;     // dinaikkan dari 140 ke 130
+  const PHOTO_W = 200;
+  const PHOTO_H = 310;     // lebih pendek biar jauh dari ttd
 
-// rasio dasar supaya fotonya muat
-let baseRatio = Math.min(PHOTO_W / pasPhotoImg.width, PHOTO_H / pasPhotoImg.height);
+  const frameAspect = PHOTO_W / PHOTO_H;
+  const imgAspect = pasPhotoImg.width / pasPhotoImg.height;
 
-// kecilkan lagi sedikit (misal 0.85 = 85%)
-const SHRINK = 0.85;
-const ratio = baseRatio * SHRINK;
+  let srcX, srcY, srcW, srcH;
 
-const drawW = pasPhotoImg.width * ratio;
-const drawH = pasPhotoImg.height * ratio;
+  if (imgAspect > frameAspect) {
+    // Crop kiri–kanan
+    srcH = pasPhotoImg.height;
+    srcW = srcH * frameAspect;
+    srcX = (pasPhotoImg.width - srcW) / 2;
+    srcY = 0;
+  } else {
+    // Crop atas–bawah
+    srcW = pasPhotoImg.width;
+    srcH = srcW / frameAspect;
+    srcX = 0;
+    srcY = (pasPhotoImg.height - srcH) / 2;
+  }
 
-// center di dalam area foto
-const offsetX = PHOTO_X + (PHOTO_W - drawW) / 2;
-const offsetY = PHOTO_Y + (PHOTO_H - drawH) / 2;
+  const INNER_MARGIN = 8;
+  const drawX = PHOTO_X + INNER_MARGIN;
+  const drawY = PHOTO_Y + INNER_MARGIN;
+  const drawW = PHOTO_W - INNER_MARGIN * 2;
+  const drawH = PHOTO_H - INNER_MARGIN * 2;
 
-ctx.drawImage(pasPhotoImg, offsetX, offsetY, drawW, drawH);
+  ctx.drawImage(
+    pasPhotoImg,
+    srcX, srcY, srcW, srcH,
+    drawX, drawY, drawW, drawH
+  );
 
-
-
-  // nama depan sebagai "tanda tangan"
-  const sign = data.nama.split(" ")[0] || data.nama;
-
-  // --- tulis teks, koordinat sama dengan create.py --- //
-  // font size list: [25, 32, 16, 40]
-  // fprov = Arrial, fnik = Ocr, fdata = Arrial, fsign = Sign
-
-  // PROVINSI dan KOTA (anchor="ms")
+  // ================================
+  // 3. Teks Judul Provinsi & Kota
+  // ================================
   drawTextCenter(
     380,
     45,
@@ -165,14 +186,18 @@ ctx.drawImage(pasPhotoImg, offsetX, offsetY, drawW, drawH);
     25
   );
 
-  // NIK (OCR font, size 32)
+  // ================================
+  // 4. NIK
+  // ================================
   ctx.font = "32px OcrKTP";
   ctx.textAlign = "left";
   ctx.textBaseline = "top";
   ctx.fillStyle = "#000000";
   ctx.fillText(data.nik, 170, 105);
 
-  // Data lain (font data = Arrial, size 16)
+  // ================================
+  // 5. Data lain
+  // ================================
   const upper = (s) => s.toUpperCase();
 
   drawTextLeft(190, 145, upper(data.nama), "ArrialKTP", 16);
@@ -189,48 +214,62 @@ ctx.drawImage(pasPhotoImg, offsetX, offsetY, drawW, drawH);
   drawTextLeft(190, 369, upper(data.kewarganegaraan), "ArrialKTP", 16);
   drawTextLeft(190, 390, upper(data.masa_berlaku), "ArrialKTP", 16);
 
-  // tempat & tanggal pembuatan + kota
+  // ================================
+  // 6. Kota & Tanggal – Dinaikkan
+  // ================================
   drawTextLeft(
     553,
-    340,
+    330,   // sebelumnya 340
     `KOTA ${data.kota.toUpperCase()}`,
     "ArrialKTP",
     16
   );
-  drawTextLeft(570, 360, data.terbuat, "ArrialKTP", 16);
+  drawTextLeft(570, 350, data.terbuat, "ArrialKTP", 16); // sebelumnya 360
 
-  // "tanda tangan"
+  // ================================
+  // 7. Tanda Tangan
+  // ================================
+  const sign = data.nama.split(" ")[0] || data.nama;
   ctx.font = "40px SignKTP";
   ctx.textAlign = "left";
   ctx.textBaseline = "top";
-  ctx.fillStyle = "#000000";
   ctx.fillText(sign, 540, 395);
 
-  console.log("[XXX]GENERATE FAKE E-KTP SUCCESS");
-  console.log(data);
-
-  // buat link download
-  const dataURL = canvas.toDataURL("image/png");
-  downloadLink.href = dataURL;
-  downloadLink.style.display = "inline-block";
+  console.log("[OK] Generated");
 }
 
-// submit handler
+// ===============================
+// EVENT: Submit
+// ===============================
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
-  try {
-    await generateKTP();
-  } catch (err) {
-    console.error(err);
-    alert("Terjadi error saat generate E-KTP. Cek console browser.");
-  }
+  await generateKTP();
 });
 
-// tombol bersihkan
+// ===============================
+// EVENT: Bersihkan
+// ===============================
 clearBtn.addEventListener("click", () => {
   form.reset();
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  downloadLink.style.display = "none";
 });
 
-
+// ===============================
+// EVENT: Download PNG
+// ===============================
+downloadBtn.addEventListener("click", () => {
+  canvas.toBlob((blob) => {
+    if (!blob) {
+      alert("Generate dulu sebelum download!");
+      return;
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "fake-ektp.png";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }, "image/png");
+});
